@@ -1,0 +1,14 @@
+{% block header %}
+	<header class="header">
+		<div class="wrapper">
+			<h1 class="hdr-logo" role="banner">
+				<a href="{{ baseurl() }}" rel="home">{{site.name}}<div id="logo"></div></a>
+			</h1>
+		</div>
+
+	</header>
+
+	<nav id="nav-main" class="nav-main" role="navigation">
+		{% include "menu.twig" with {'menu': nav.get_items} %}
+	</nav><!-- #nav -->
+{% endblock %}

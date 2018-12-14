@@ -2,6 +2,9 @@
 
 namespace App;
 
+
+use Cig;
+
 /**
  * Add <body> classes
  */
@@ -20,10 +23,17 @@ add_filter('body_class', function (array $classes) {
 
     /** Clean up class names for custom templates */
     $classes = array_map(function ($class) {
-        return preg_replace(['/-blade(-php)?$/', '/^page-template-views/'], '', $class);
+        return preg_replace(['/-twig(-php)?$/', '/^page-template-views/'], '', $class);
     }, $classes);
 
     return array_filter($classes);
+});
+
+/**
+ * Sidebar is on by default unless one of these conditions is met and returns false (to hide sidebar)
+ */
+add_filter('sage/display_sidebar', function() {
+	return true;
 });
 
 /**
@@ -34,7 +44,9 @@ add_filter('excerpt_more', function () {
 });
 
 /**
- * Template Hierarchy should search for .blade.php files
+ * Template Hierarchy should search for .twig files
+ * This relies on Brain\Hierarchy template parser running all applicable filters from the array below
+ * for the current WP_Query
  */
 collect([
     'index', '404', 'archive', 'author', 'category', 'tag', 'taxonomy', 'date', 'home',
@@ -44,30 +56,26 @@ collect([
 });
 
 /**
- * Render page using Blade
+ * Render page using Timber
  */
 add_filter('template_include', function ($template) {
-    collect(['get_header', 'wp_head'])->each(function ($tag) {
-        ob_start();
-        do_action($tag);
-        $output = ob_get_clean();
-        remove_all_actions($tag);
-        add_action($tag, function () use ($output) {
-            echo $output;
-        });
-    });
+	debug('event', 'Including templates based on body_classes');
+
     $data = collect(get_body_class())->reduce(function ($data, $class) use ($template) {
+	    debug('classes', $class);
         return apply_filters("sage/template/{$class}/data", $data, $template);
     }, []);
+
     if ($template) {
         echo template($template, $data);
         return get_stylesheet_directory().'/index.php';
     }
+
     return $template;
 }, PHP_INT_MAX);
 
 /**
- * Render comments.blade.php
+ * Tell WordPress how to find the compiled path of comments.twig
  */
 add_filter('comments_template', function ($comments_template) {
     $comments_template = str_replace(
@@ -75,17 +83,5 @@ add_filter('comments_template', function ($comments_template) {
         '',
         $comments_template
     );
-
-    $data = collect(get_body_class())->reduce(function ($data, $class) use ($comments_template) {
-        return apply_filters("sage/template/{$class}/data", $data, $comments_template);
-    }, []);
-
-    $theme_template = locate_template(["views/{$comments_template}", $comments_template]);
-
-    if ($theme_template) {
-        echo template($theme_template, $data);
-        return get_stylesheet_directory().'/index.php';
-    }
-
-    return $comments_template;
-}, 100);
+    return template_path(locate_template(["views/{$comments_template}", $comments_template]) ?: $comments_template);
+});

@@ -1,19 +1,26 @@
-# [Sage](https://roots.io/sage/)
-[![Packagist](https://img.shields.io/packagist/vpre/roots/sage.svg?style=flat-square)](https://packagist.org/packages/roots/sage)
-[![devDependency Status](https://img.shields.io/david/dev/roots/sage.svg?style=flat-square)](https://david-dm.org/roots/sage#info=devDependencies)
-[![Build Status](https://img.shields.io/travis/roots/sage.svg?style=flat-square)](https://travis-ci.org/roots/sage)
+# Sage-9-Timber
 
-Sage is a WordPress starter theme with a modern development workflow.
+Sage-9-Timber is [Sage theme](https://github.com/roots/sage) version 9 made to work with [Timber](https://www.upstatement.com/timber/).
+
+For easy integrations and later compatibility, this repository aimed at making the minimum of changes possible to the original Sage 9 beta 4 in order to make Timber work. This theme has still twig template language support.
+
+**Sage 9 is in active development and is currently in beta. This initial fork used version Sage 9 beta 4. If you want a stable version of Sage ported to Timber, have a look at the [sage-timber](https://github.com/itcig/sage-timber) project.**
 
 ## Features
 
 * Sass for stylesheets
-* Modern JavaScript
+* ES6 for JavaScript
 * [Webpack](https://webpack.github.io/) for compiling assets, optimizing images, and concatenating and minifying files
 * [Browsersync](http://www.browsersync.io/) for synchronized browser testing
-* [Blade](https://laravel.com/docs/5.6/blade) as a templating engine
+* [Twig](https://twig.symfony.com/doc/2.x/) as a templating engine
 * [Controller](https://github.com/soberwp/controller) for passing data to Blade templates
-* CSS framework (optional): [Bootstrap 4](https://getbootstrap.com/), [Bulma](https://bulma.io/), [Foundation](https://foundation.zurb.com/), [Tachyons](http://tachyons.io/), [Tailwind](https://tailwindcss.com/)
+* CSS framework options:
+  * [Bootstrap 4](http://getbootstrap.com/)
+  * [Bulma](http://bulma.io/)
+  * [Foundation](http://foundation.zurb.com/)
+  * [Tachyons](http://tachyons.io/)
+  * None (blank slate)
+* Font Awesome (optional)
 
 See a working example at [roots-example-project.com](https://roots-example-project.com/).
 
@@ -21,39 +28,28 @@ See a working example at [roots-example-project.com](https://roots-example-proje
 
 Make sure all dependencies have been installed before moving on:
 
+* [Timber](https://www.upstatement.com/timber/) as a WordPress plugin
 * [WordPress](https://wordpress.org/) >= 4.7
-* [PHP](https://secure.php.net/manual/en/install.php) >= 7.1.3 (with [`php-mbstring`](https://secure.php.net/manual/en/book.mbstring.php) enabled)
+* [PHP](http://php.net/manual/en/install.php) >= 7.0
 * [Composer](https://getcomposer.org/download/)
 * [Node.js](http://nodejs.org/) >= 6.9.x
 * [Yarn](https://yarnpkg.com/en/docs/install)
 
 ## Theme installation
 
-Install Sage using Composer from your WordPress themes directory (replace `your-theme-name` below with the name of your theme):
-
-```shell
-# @ app/themes/ or wp-content/themes/
-$ composer create-project roots/sage your-theme-name
-```
-
-To install the latest development version of Sage, add `dev-master` to the end of the command:
-
-```shell
-$ composer create-project roots/sage your-theme-name dev-master
-```
-
-During theme installation you will have options to update `style.css` theme headers, select a CSS framework, and configure Browsersync.
+Install Sage-9-timber by copying the project into a new folder within your WordPress themes directory.
 
 ## Theme structure
 
 ```shell
 themes/your-theme-name/   # → Root of your Sage based theme
 ├── app/                  # → Theme PHP
-│   ├── Controllers/      # → Controller files
+│   ├── controllers/      # → Controller files
 │   ├── admin.php         # → Theme customizer setup
 │   ├── filters.php       # → Theme filters
 │   ├── helpers.php       # → Helper functions
-│   └── setup.php         # → Theme setup
+│   ├── setup.php         # → Actions and theme options
+│   └── timber.php        # → Timber init
 ├── composer.json         # → Autoloading for `app/` files
 ├── composer.lock         # → Composer lock file (never edit)
 ├── dist/                 # → Built theme assets (never edit)
@@ -71,9 +67,8 @@ themes/your-theme-name/   # → Root of your Sage based theme
 │   ├── index.php         # → Never manually edit
 │   ├── screenshot.png    # → Theme screenshot for WP admin
 │   ├── style.css         # → Theme meta information
-│   └── views/            # → Theme templates
-│       ├── layouts/      # → Base templates
-│       └── partials/     # → Partial templates
+│   └── views/            # → Theme Timber templates
+│       └── templates/    # → Timber twig templates
 └── vendor/               # → Composer packages (never edit)
 ```
 
@@ -90,26 +85,25 @@ Edit `app/setup.php` to enable or disable theme features, setup navigation menus
 
 ### Build commands
 
-* `yarn start` — Compile assets when file changes are made, start Browsersync session
-* `yarn build` — Compile and optimize the files in your assets directory
-* `yarn build:production` — Compile assets for production
+* `yarn run start` — Compile assets when file changes are made, start Browsersync session
+* `yarn run build` — Compile and optimize the files in your assets directory
+* `yarn run build:production` — Compile assets for production
 
 ## Documentation
 
-* [Sage documentation](https://roots.io/sage/docs/)
-* [Controller documentation](https://github.com/soberwp/controller#usage)
+Timber documentation is available at [https://timber.github.io/docs/](https://timber.github.io/docs/).
+
+Twig documentation is available at [http://twig.sensiolabs.org/](http://twig.sensiolabs.org/).
+
+Sage 9 documentation is currently in progress and can be viewed at [https://github.com/roots/docs/tree/sage-9/sage](https://github.com/roots/docs/tree/sage-9/sage).
+
+Controller documentation is available at [https://github.com/soberwp/controller#usage](https://github.com/soberwp/controller#usage).
 
 ## Contributing
 
-Contributions are welcome from everyone. We have [contributing guidelines](https://github.com/roots/guidelines/blob/master/CONTRIBUTING.md) to help you get started.
+Contributions are welcome from everyone. Just issue a pull request to this repository.
 
-## Sage sponsors
-
-Help support our open-source development efforts by [becoming a patron](https://www.patreon.com/rootsdev).
-
-<a href="https://kinsta.com/?kaid=OFDHAJIXUDIV"><img src="https://cdn.roots.io/app/uploads/kinsta.svg" alt="Kinsta" width="200" height="150"></a> <a href="https://k-m.com/"><img src="https://cdn.roots.io/app/uploads/km-digital.svg" alt="KM Digital" width="200" height="150"></a>
-
-## Community
+## Sage Community
 
 Keep track of development and community news.
 

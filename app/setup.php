@@ -2,10 +2,9 @@
 
 namespace App;
 
+use Timber;
 use Roots\Sage\Container;
 use Roots\Sage\Assets\JsonManifest;
-use Roots\Sage\Template\Blade;
-use Roots\Sage\Template\BladeProvider;
 
 /**
  * Theme assets
@@ -13,10 +12,6 @@ use Roots\Sage\Template\BladeProvider;
 add_action('wp_enqueue_scripts', function () {
     wp_enqueue_style('sage/main.css', asset_path('styles/main.css'), false, null);
     wp_enqueue_script('sage/main.js', asset_path('scripts/main.js'), ['jquery'], null, true);
-
-    if (is_single() && comments_open() && get_option('thread_comments')) {
-        wp_enqueue_script('comment-reply');
-    }
 }, 100);
 
 /**
@@ -43,9 +38,9 @@ add_action('after_setup_theme', function () {
      * Register navigation menus
      * @link https://developer.wordpress.org/reference/functions/register_nav_menus/
      */
-    register_nav_menus([
+    /*register_nav_menus([
         'primary_navigation' => __('Primary Navigation', 'sage')
-    ]);
+    ]);*/
 
     /**
      * Enable post thumbnails
@@ -63,7 +58,7 @@ add_action('after_setup_theme', function () {
      * Enable selective refresh for widgets in customizer
      * @link https://developer.wordpress.org/themes/advanced-topics/customizer-api/#theme-support-in-sidebars
      */
-    add_theme_support('customize-selective-refresh-widgets');
+    //add_theme_support('customize-selective-refresh-widgets');
 
     /**
      * Use main stylesheet for visual editor
@@ -96,8 +91,17 @@ add_action('widgets_init', function () {
  * Updates the `$post` variable on each iteration of the loop.
  * Note: updated value is only available for subsequently loaded views, such as partials
  */
-add_action('the_post', function ($post) {
-    sage('blade')->share('post', $post);
+//add_action('the_post', function ($post) {
+//    sage('blade')->share('post', $post);
+//});
+
+/**
+ * Dump debug container into Javascript console if on development environment
+ */
+add_action('wp_footer', function() {
+	if (WP_ENV === 'development') {
+		echo '<script>console.log("***** THEME DEBUG *****");console.log(' . json_encode(sage('debug')->all(), JSON_PRETTY_PRINT) . ');console.log("***** END DEBUG *****");</script>';
+	}
 });
 
 /**
@@ -111,22 +115,42 @@ add_action('after_setup_theme', function () {
         return new JsonManifest(config('assets.manifest'), config('assets.uri'));
     });
 
-    /**
-     * Add Blade to Sage container
-     */
-    sage()->singleton('sage.blade', function (Container $app) {
-        $cachePath = config('view.compiled');
-        if (!file_exists($cachePath)) {
-            wp_mkdir_p($cachePath);
-        }
-        (new BladeProvider($app))->register();
-        return new Blade($app['view']);
-    });
+	/**
+	 * Add the directory of templates in include path
+	 */
+	$views_dir = config('view.folders');
+
+	if (is_array(Timber::$dirname)) {
+		Timber::$dirname += $views_dir;
+	} elseif (Timber::$dirname) {
+		Timber::$dirname = array_merge([Timber::$dirname], $views_dir);
+	} else {
+		Timber::$dirname = $views_dir;
+	}
 
     /**
-     * Create @asset() Blade directive
+     * Add Timber to Sage container
      */
-    sage('blade')->compiler()->directive('asset', function ($asset) {
-        return "<?= " . __NAMESPACE__ . "\\asset_path({$asset}); ?>";
+    sage()->singleton('sage.timber', function (Container $app) {
+		return Timber;
     });
 });
+
+/*
+ * Recommended action by Hierarchy to include subfolders, but calls theme template_include
+ * multiple times
+ */
+/*add_action('template_redirect', function () {
+	$finder = new \Brain\Hierarchy\Finder\SubfolderTemplateFinder(
+		array_merge(config('view.folders'),
+			[
+				get_stylesheet_directory(),
+				get_template_directory(),
+			]),
+		[ 'twig', 'php' ]);
+
+	$queryTemplate = new \Brain\Hierarchy\QueryTemplate($finder);
+
+	echo $queryTemplate->loadTemplate();
+	//exit();
+});*/

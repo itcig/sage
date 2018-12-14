@@ -23,8 +23,8 @@ $sage_error = function ($message, $subtitle = '', $title = '') {
 /**
  * Ensure compatible version of PHP is used
  */
-if (version_compare('7.1', phpversion(), '>=')) {
-    $sage_error(__('You must be using PHP 7.1 or greater.', 'sage'), __('Invalid PHP version', 'sage'));
+if (version_compare('7', phpversion(), '>=')) {
+    $sage_error(__('You must be using PHP 7 or greater.', 'sage'), __('Invalid PHP version', 'sage'));
 }
 
 /**
@@ -58,7 +58,21 @@ array_map(function ($file) use ($sage_error) {
     if (!locate_template($file, true, true)) {
         $sage_error(sprintf(__('Error locating <code>%s</code> for inclusion.', 'sage'), $file), 'File not found');
     }
-}, ['helpers', 'setup', 'filters', 'admin']);
+}, ['helpers', 'setup', 'filters', 'admin', 'timber']);
+
+/**
+ * Set custom App autoloader for components
+ * These are items called by controllers to render view items
+ */
+spl_autoload_register(function($class) use ($sage_error) {
+	if (strpos($class, 'App\Controllers\Components') === 0) {
+		$classFile = dirname(__DIR__).'/app/components/' . str_replace('\\', '/', str_replace('App\\Controllers\\Components\\', '', $class)) . '.php';
+		if (!is_file($classFile)) {
+			$sage_error(sprintf(__('Cannot load component: %s', $class), 'Component not found'));
+		}
+		require_once $classFile;
+	}
+});
 
 /**
  * Here's what's happening with these hooks:
@@ -82,6 +96,10 @@ array_map(
     ['theme_file_path', 'theme_file_uri', 'parent_theme_file_path', 'parent_theme_file_uri'],
     array_fill(0, 4, 'dirname')
 );
+
+/**
+ * Configuration container
+ */
 Container::getInstance()
     ->bindIf('config', function () {
         return new Config([
@@ -90,3 +108,25 @@ Container::getInstance()
             'view' => require dirname(__DIR__).'/config/view.php',
         ]);
     }, true);
+
+/**
+ * Debug container for filling with events and variables in development environment
+ */
+Container::getInstance()
+     ->bindIf('debug', function () {
+         return new Config([
+	         'data'      => [],
+	         'classes'   => [],
+	         'templates' => [],
+         ]);
+     }, TRUE);
+
+/**
+ * SoberTimber Loader is included with composer and run on init hook
+ *
+ * Loads all controllers that intersect with set body classes
+ * 1. Add a filter to be called by every body class *-data found in loader, e.g. home-data body-data app-data contact-data
+ * 2. Load controller and initialize
+ * 3. Return array of application data, post data and controller data
+ */
+

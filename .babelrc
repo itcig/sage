@@ -1,0 +1,24 @@
+{
+	"presets": [
+		[
+			"env",
+			{
+				"targets": {
+					"browsers": [
+						"last 2 versions",
+						"IE >= 9"
+					]
+				}
+			}
+		],
+		"stage-2"
+	],
+	"plugins": [
+		[
+			"transform-runtime",
+			{
+				"regenerator": true
+			}
+		]
+	]
+}

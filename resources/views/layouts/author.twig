@@ -1,0 +1,9 @@
+{% extends "base.twig" %}
+
+{% block content %}
+	{% if title %}<h1>{{title}}</h1>{% endif %}
+	Analysis by {{ author.display_name }}
+	{% for post in posts %}
+		{% include ["tease-"~post.post_type~".twig", "tease.twig"] %}
+	{% endfor %}
+{% endblock %}

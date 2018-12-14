@@ -3,9 +3,10 @@
 namespace App;
 
 use Roots\Sage\Container;
+use Timber;
 
 /**
- * Get the sage container.
+ * Get the sage container which extends Illuminate\Container.
  *
  * @param string $abstract
  * @param array  $parameters
@@ -46,13 +47,84 @@ function config($key = null, $default = null)
 }
 
 /**
+ * Get / set the specified configuration value.
+ *
+ * If an array is passed as the key, we will assume you want to set an array of values.
+ *
+ * @param array|string $key
+ * @param mixed $default
+ * @param bool $single Key is a one-time set and will not be an array of debug data
+ * @return mixed|\Roots\Sage\Config
+ * @copyright Taylor Otwell
+ * @link https://github.com/laravel/framework/blob/c0970285/src/Illuminate/Foundation/helpers.php#L254-L265
+ */
+function debug($key = null, $default = null, $single = false)
+{
+	if (is_null($key)) {
+		return sage('debug');
+	}
+
+	if (is_array($key)) {
+		return sage('config')->set($key);
+	} else {
+		if ($single) {
+			sage('debug')->set($key, $default);
+		} else {
+			sage('debug')->push($key, $default);
+		}
+	}
+
+	return sage('debug')->get($key, $default);
+}
+
+
+/**
  * @param string $file
  * @param array $data
  * @return string
  */
 function template($file, $data = [])
 {
-    return sage('blade')->render($file, $data);
+	debug('event', 'Executing template() method');
+
+	// Debug Wordpress variables and query objects
+	global $wp, $wp_query;
+	debug('query_vars', $wp->query_vars, true);
+	debug('wp_query', $wp_query, true);
+
+	// Debug all possible Twig template paths
+	debug('template_paths', config('view.folders'));
+
+	/**
+	 * This came with sage. Why??
+	 */
+    if (remove_action('wp_head', 'wp_enqueue_scripts', 1)) {
+        wp_enqueue_scripts();
+    }
+
+    $context = array_merge(Timber::get_context(), $data);
+
+	$passed_template = str_replace(".php", ".twig", basename($file));
+	$templates = [$passed_template, 'index.twig'];
+	if (isset($context['templates'])) {
+		if (is_array($context['templates'])) {
+			$templates = array_merge($context['templates'], $templates);
+		} else {
+			$templates = array_unshift($templates, $context['templates']);
+		}
+	}
+
+	// Debug all possible template being matched
+	debug('event', 'Template Rendering');
+
+	// Debug template match order
+	debug ('template_order', $templates);
+
+	// Add Twig $context to debug container
+	debug('context', $context, true);
+
+	return sage('timber')::compile($templates, $context);
+	//return Timber::compile($templates, $context);
 }
 
 /**
@@ -61,10 +133,10 @@ function template($file, $data = [])
  * @param array $data
  * @return string
  */
-function template_path($file, $data = [])
+/*function template_path($file, $data = [])
 {
     return sage('blade')->compiledPath($file, $data);
-}
+}*/
 
 /**
  * @param $asset
@@ -81,40 +153,35 @@ function asset_path($asset)
  */
 function filter_templates($templates)
 {
-    $paths = apply_filters('sage/filter_templates/paths', [
-        'views',
-        'resources/views'
-    ]);
-    $paths_pattern = "#^(" . implode('|', $paths) . ")/#";
+	$paths = apply_filters('sage/filter_templates/paths', config('view.folders'));
 
-    return collect($templates)
-        ->map(function ($template) use ($paths_pattern) {
-            /** Remove .blade.php/.blade/.php from template names */
-            $template = preg_replace('#\.(blade\.?)?(php)?$#', '', ltrim($template));
+	$paths_pattern = "#^(" . implode('|', $paths) . ")/#";
 
-            /** Remove partial $paths from the beginning of template names */
-            if (strpos($template, '/')) {
-                $template = preg_replace($paths_pattern, '', $template);
-            }
+	return collect($templates)
+		->map(function ($template) use ($paths_pattern) {
+			/** Remove .twig.php/.twig/.php from template names */
+			$template = preg_replace('#\.(twig\.?)?(php)?$#', '', ltrim($template));
 
-            return $template;
-        })
-        ->flatMap(function ($template) use ($paths) {
-            return collect($paths)
-                ->flatMap(function ($path) use ($template) {
-                    return [
-                        "{$path}/{$template}.blade.php",
-                        "{$path}/{$template}.php",
-                    ];
-                })
-                ->concat([
-                    "{$template}.blade.php",
-                    "{$template}.php",
-                ]);
-        })
-        ->filter()
-        ->unique()
-        ->all();
+			/** Remove partial $paths from the beginning of template names */
+			if (strpos($template, '/')) {
+				$template = preg_replace($paths_pattern, '', $template);
+			}
+
+			return $template;
+		})
+		->flatMap(function ($template) use ($paths) {
+			return collect($paths)
+				->flatMap(function ($path) use ($template) {
+					return [
+						"{$path}/{$template}.php",  //breaks theme if removed
+						//"{$template}.twig",  //needed?
+						//"{$template}.php",  //needed?
+					];
+				});
+		})
+		->filter()
+		->unique()
+		->all();
 }
 
 /**

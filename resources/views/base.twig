@@ -1,0 +1,41 @@
+{% block html_head_container %}
+
+{% include 'html-header.twig' %}
+	{% block head %}
+	{% endblock %}
+	</head>
+{% endblock %}
+
+	<body class="{{body_class}} media-id" data-template="base.twig">
+		<main role="main" class="container box-shadow">
+
+			{% include "header.twig" %}
+
+		<section id="content" role="main" class="content-wrapper">
+			<div class="row">
+				<div class="col">
+					<div class="wrapper">
+						{% block content %}
+							Sorry, no content
+						{% endblock %}
+					</div>
+				</div>
+			</div>
+		</section>
+
+		{% if sidebar %}
+			<aside id ="sidebar">
+				{{sidebar}}
+			</aside>
+		{% endif %}
+
+		</main>
+
+		{% block footer %}
+			<footer id="footer">
+				{% include 'footer.twig' %}
+			</footer>
+			{{ function('wp_footer') }}
+		{% endblock %}
+	</body>
+</html>
