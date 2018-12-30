@@ -2,11 +2,18 @@
 
 namespace App\Controllers;
 
-use Cig\Sage\Controller\Debugger;
 use Cig\Sage\Controller\Controller;
-use Timber;
 
 class App extends Controller {
+
+	// Controller Classes come with two lifecycle hooks for greater control
+	public function __before() {
+		// runs after this->data is set up, but before the class methods are run
+	}
+	
+	public function __after()	{
+		// runs after all the class methods have run
+	}
 
 	public function siteName() {
 		return get_bloginfo('name');
