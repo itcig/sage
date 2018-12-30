@@ -33,7 +33,7 @@
   ],
   "keywords": ["wordpress"],
   "support": {
-    "issues": "https://github.com/itcig/sage-9-timber/issues",
+    "issues": "https://github.com/itcig/sage-9-timber/issues"
   },
   "autoload": {
     "psr-4": {
