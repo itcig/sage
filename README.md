@@ -6,6 +6,16 @@ For easy integrations and later compatibility, this repository aimed at making t
 
 **Sage 9 is in active development and is currently in beta. This initial fork used version Sage 9 beta 4. If you want a stable version of Sage ported to Timber, have a look at the [sage-timber](https://github.com/itcig/sage-timber) project.**
 
+## Bedrock specific Install
+You must implement the following in the root of the Bedrock project composer.json. Otherwise your controllers will not be loaded by the SageController package since it will be expecting them to load relative to the theme composer autoloader.
+```
+"autoload": {
+    "psr-4": {
+        "App\\": "web/app/themes/<child-theme>/app/"
+    }
+},
+```
+
 ## Features
 
 * Sass for stylesheets

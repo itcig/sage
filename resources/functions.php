@@ -35,16 +35,26 @@ if (version_compare('4.7.0', get_bloginfo('version'), '>=')) {
 }
 
 /**
- * Ensure dependencies are loaded
+ * Ensure composer dependencies are loaded
  */
-if (!class_exists('Roots\\Sage\\Container')) {
-    if (!file_exists($composer = __DIR__.'/../vendor/autoload.php')) {
-        $sage_error(
-            __('You must run <code>composer install</code> from the Sage directory.', 'sage'),
-            __('Autoloader not found.', 'sage')
-        );
-    }
-    require_once $composer;
+if (class_exists('Roots\\Sage\\Container')) {
+	// Initialize CIG Sage Controller which loads all Controller methods into Timber
+  // Normally this occurs in the SageController package but if we are loading the theme
+  // via Bedrock project root composer.json then this fires before Wordpress action hooks
+  // are available.
+  //
+  // TODO: If running off composer inside the theme folder then this may fire twice so check
+  // if action already exists
+	add_action('init', 'Cig\Sage\Controller\loader');
+
+} else {
+	if (!file_exists($composer = __DIR__.'/../vendor/autoload.php')) {
+		$sage_error(
+			__('You must run <code>composer install</code> from the Sage directory.', 'sage'),
+			__('Autoloader not found.', 'sage')
+		);
+	}
+	require_once $composer;
 }
 
 /**
@@ -129,4 +139,3 @@ Container::getInstance()
  * 2. Load controller and initialize
  * 3. Return array of application data, post data and controller data
  */
-
