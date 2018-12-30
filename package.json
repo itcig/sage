@@ -1,15 +1,15 @@
 {
   "name": "sage",
-  "version": "9.0.0-beta.4",
-  "author": "Roots <team@roots.io>",
-  "homepage": "https://roots.io/sage/",
+  "version": "9.0.6",
+  "author": "Capitol Information Group <it@capinfogroup.com>",
+  "homepage": "https://github.com/itcig",
   "private": true,
   "repository": {
     "type": "git",
-    "url": "git://github.com/roots/sage.git"
+    "url": "git://github.com/itcig/sage-9-timber.git"
   },
   "bugs": {
-    "url": "https://github.com/roots/sage/issues"
+    "url": "https://github.com/itcig/sage-9-timber/issues"
   },
   "licenses": [
     {
